@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from email_service import send_thank_you_email
+from email_service import send_admin_notification
 from database import init_db, insert_email, list_signups
 
 app = FastAPI(title="Mouspike Early Access API")
@@ -32,10 +32,10 @@ def signup(payload: SignupRequest):
 
     if result["inserted"]:
         demo_receiver = os.getenv("TEST_RECEIVER_EMAIL", email)
-        try:
-            send_thank_you_email(demo_receiver)
-        except Exception as e:
-            print("Welcome email failed:", repr(e))
+    try:
+        send_admin_notification(email)  # email real del usuario
+    except Exception as e:
+        print("Admin email failed:", repr(e))
         return {
             "status": "ok",
             "message": "Email Registered Successfully",
