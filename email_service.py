@@ -1,5 +1,6 @@
 import os
 import smtplib
+import ssl
 from email.message import EmailMessage
 
 def send_thank_you_email(to_email: str) -> None:
@@ -7,6 +8,7 @@ def send_thank_you_email(to_email: str) -> None:
     SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
     SMTP_USER = os.getenv("SMTP_USER")
     SMTP_PASS = os.getenv("SMTP_PASS")
+
     if not SMTP_USER or not SMTP_PASS:
         print("SMTP missing env vars (SMTP_USER / SMTP_PASS).")
         return
@@ -24,7 +26,8 @@ def send_thank_you_email(to_email: str) -> None:
         "— MOUSPIKE (London, UK)\n"
         )
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
             server.ehlo()
             server.starttls()
             server.ehlo()
@@ -33,3 +36,4 @@ def send_thank_you_email(to_email: str) -> None:
             print(f"Email sent to {to_email}")
     except Exception as e:
         print("Email send failed:", repr(e))
+        raise
