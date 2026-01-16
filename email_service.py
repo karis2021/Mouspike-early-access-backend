@@ -1,39 +1,34 @@
 import os
-import smtplib
-import ssl
-from email.message import EmailMessage
+import requests
 
 def send_thank_you_email(to_email: str) -> None:
-    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.office365.com")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-    SMTP_USER = os.getenv("SMTP_USER")
-    SMTP_PASS = os.getenv("SMTP_PASS")
-
-    if not SMTP_USER or not SMTP_PASS:
-        print("SMTP missing env vars (SMTP_USER / SMTP_PASS).")
+    api_key = os.getenv("RESEND_API_KEY")
+    from_email = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
+    reply_to = os.getenv("REPLY_TO", "iriscita_9@hotmail.com")
+    if not api_key:
+        print("Missing RESEND_API_KEY")
         return
+    payload = {
+        "from": from_email,
+        "to": [to_email],
+        "subject": "Mouspike Early Access - Request received",
+        "text": (
+            "Welcome to Mouspike.\n\n"
+            "You're now inside Early Access.\n\n"
+            "No re-entry.\n"
+            "No repeats.\n"
+            "You'll hear from us first.\n\n"
+            "— MOUSPIKE (London, UK)\n"
+        ),
+        "reply_to": reply_to,
+    }
+    r = requests.post(
+        "https://api.resend.com/emails",
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        json=payload,
+        timeout=20,
+    )
+    if r.status_code >= 400:
+        raise Exception(f"Resend error {r.status_code}: {r.text}")
 
-    msg = EmailMessage()
-    msg["Subject"] = "Mouspike Early Access - Request received"
-    msg["From"] = SMTP_USER
-    msg["To"] = to_email
-    msg.set_content(
-        "Welcome to Mouspike.\n\n"
-        "You're now inside Early Access.\n\n"
-        "No re-entry.\n"
-        "No repeats.\n"
-        "You'll hear from us first.\n\n"
-        "— MOUSPIKE (London, UK)\n"
-        )
-    try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-            print(f"Email sent to {to_email}")
-    except Exception as e:
-        print("Email send failed:", repr(e))
-        raise
+    print("Email sent via Resend:", r.json())
