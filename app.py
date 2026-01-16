@@ -29,15 +29,15 @@ class SignupRequest(BaseModel):
 
 @app.post("/signup")
 def signup(payload: SignupRequest):
-    email = payload.email
-    result = insert_email(payload.email)
+    email = payload.email.strip().lower()
+    result = insert_email(email)
     if result["inserted"]:
-        send_thank_you_email(payload.email)
+        send_thank_you_email(email)
         send_welcome_email(email)
         return{
         "status": "ok",
         "message": "Email Registered Successfully",
-        "email": payload.email
+        "email": email
     }
     return{
         "status": "Exists",
