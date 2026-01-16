@@ -32,7 +32,7 @@ def list_signups(limit: int = 100) -> List[Dict[str, Any]]:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "SELECT id, emai, created_at FROM signups ORDER BY id DESC LIMIT ?",
+        "SELECT id, email, created_at FROM signups ORDER BY id DESC LIMIT ?",
         (limit,)
     )
     rows = cur.fetchall()
