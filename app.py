@@ -33,17 +33,16 @@ def signup(payload: SignupRequest):
     if result["inserted"]:
         demo_receiver = os.getenv("TEST_RECEIVER_EMAIL", email)
     try:
-        send_admin_notification(email)  # email real del usuario
+        send_admin_notification(email)
     except Exception as e:
         print("Admin email failed:", repr(e))
         return {
             "status": "ok",
             "message": "Email Registered Successfully",
             "email": email,
-           "email_sent_to": demo_receiver
         }
     return {
-        "status": "Exists",
+        "status": "exists",
         "message": "Email already registered",
         "email": email
     }
