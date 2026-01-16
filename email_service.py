@@ -3,22 +3,26 @@ import smtplib
 from email.message import EmailMessage
 def send_thank_you_email(to_email: str):
     SMTP_HOST = os.getenv("SMTP_HOST")
-    SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
     SMTP_USER = os.getenv("SMTP_USER")
     SMTP_PASS = os.getenv("SMTP_PASS")
-    FROM_EMAIL = os.getenv("FROM_EMAAIL", SMTP_USER)
-    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
-        print("Email not sent: SMTP config missing")
-        return
+
+def send_welcome_email(to_email: str):
     msg = EmailMessage()
     msg["Subject"] = "Mouspike Early Access - Request received"
-    msg["From"] = FROM_EMAIL
+    msg["From"] = SMTP_USER
     msg["to"] = to_email
-    msg.set_content(
-        "Thanks for requesting early access.\n"
-        "Access is limit. No second chances.\n\n"
-        "- Mouspike (London, UK)"
-    ) 
+    msg.set_content("""
+        Welcome to Mouspike.
+
+        You're now inside Early Access.
+
+        No re-entry.
+        No repeats.
+        You'll hear from us first.
+
+        — MOUSPIKE (London, UK)
+        """)
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
