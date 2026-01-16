@@ -1,0 +1,46 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
+from email_service import send_thank_you_email
+from database import init_db, insert_email, list_signups
+
+app = FastAPI(title="Mouspike Early Access API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+
+@app.get("/health")
+def health_check():
+    return{"status":"ok"}
+class SignupRequest(BaseModel):
+    email: str
+
+@app.post("/signup")
+def signup(payload: SignupRequest):
+    result = insert_email(payload.email)
+    if result["inserted"]:
+        send_thank_you_email(payload.email)
+        return{
+        "status": "ok",
+        "message": "Email Registered Successfully",
+        "email": payload.email
+    }
+    return{
+        "status": "Exists",
+        "message": "Email already registered",
+        "email": payload.email
+    }
+@app.get("/signups")
+def get_signups(limit: int = 100):
+    return {
+        "count": len(list_signups(limit)),
+        "items": list_signups(limit)
+    }
