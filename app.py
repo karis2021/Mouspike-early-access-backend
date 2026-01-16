@@ -9,8 +9,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
     "https://karis2021.github.io"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -28,14 +28,18 @@ class SignupRequest(BaseModel):
 def signup(payload: SignupRequest):
     email = payload.email.strip().lower()
     result = insert_email(email)
+
     if result["inserted"]:
-        send_thank_you_email(email)
-        return{
-        "status": "ok",
-        "message": "Email Registered Successfully",
-        "email": email
-    }
-    return{
+        try:
+            send_thank_you_email(email)
+        except Exception as e:
+            print("Welcome email failed:", repr(e))
+        return {
+            "status": "ok",
+            "message": "Email Registered Successfully",
+            "email": email
+        }
+    return {
         "status": "Exists",
         "message": "Email already registered",
         "email": email

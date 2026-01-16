@@ -1,6 +1,7 @@
 import os
 import smtplib
 from email.message import EmailMessage
+
 def send_thank_you_email(to_email: str) -> None:
     SMTP_HOST = os.getenv("SMTP_HOST", "smtp.office365.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
@@ -24,9 +25,11 @@ def send_thank_you_email(to_email: str) -> None:
         )
     try:
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.ehlo()
             server.starttls()
+            server.ehlo()
             server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
-        print(f"EMail sent to {to_email}")
+            print(f"Email sent to {to_email}")
     except Exception as e:
         print("Email send failed:", repr(e))
