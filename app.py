@@ -28,6 +28,7 @@ class SignupRequest(BaseModel):
 @app.post("/signup")
 def signup(payload: SignupRequest):
     email = payload.email.strip().lower()
+    print("EMAIL RECEIVED:", email)
     result = insert_email(email)
 
     if result["inserted"]:
